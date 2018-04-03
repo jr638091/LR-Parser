@@ -40,37 +40,31 @@ def first_special(list):
     result = []
     for i in list:
         for j in f[i]:
-            result.append(j)
-        if not epsilon in j:
-            break
-    return result
+            if not j in result and j != epsilon:
+                result.append(j)
+        if not epsilon in f[i]:
+            return result, False
+    return result, True
 
 
 def follow():
     follows = Follow()
     follows[G.distinguished] = [EOF]
-    has_been_modified = False
     while True:
+        has_been_modified = False
         for i in G.productions:
             left_part = i.get_Left()
             right_part = i.get_Right()
             for index in range(0, len(right_part)):
                 if right_part[index] in G.terminals:
                     continue
-                else:
-                    if index == len(right_part) - 1:
-                        has_been_modified = follows.insert_various_follow(
-                            right_part[index], follows[left_part])
-                        continue
-                    first = first_special(right_part[index:len(right_part)])
-                    t = first.copy()
-                    if epsilon in t:
-                        t.remove(epsilon)
-                    has_been_modified = follows.insert_various_follow(
-                        right_part[index], t)
-                    if epsilon in first:
-                        has_been_modified = follows.insert_various_follow(
-                            right_part[index], follows[left_part])
+                first, all_epsilon = first_special(
+                    right_part[index + 1:len(right_part)])
+                if follows.insert_various_follow(right_part[index], first):
+                    has_been_modified = True
+                if all_epsilon:
+                    if follows.insert_various_follow(right_part[index], follows[left_part]):
+                        has_been_modified = True
         if not has_been_modified:
             break
     return follows
