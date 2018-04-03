@@ -31,3 +31,17 @@ class Production:
 
     def get_Right(self):
         return self.right
+
+    def __eq__(self, production):
+        if self.left != production.left:
+            return False
+        if len(self.right) != len(production.right):
+            return False
+        a = self.right.copy()
+        b = self.right.copy()
+        a.sort()
+        b.sort()
+        for i in range(0, len(self.right)):
+            if a[i] != b[i]:
+                return False
+        return True
