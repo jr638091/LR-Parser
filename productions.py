@@ -3,8 +3,7 @@ class Production:
     epsilon = "@"
 
     def __init__(self, text):
-        left = text.split('->')[0]
-        right = text.split('->')[1]
+        left,right = text.split('->')
         left = left.split()
         while'' in left:
             left.remove('')

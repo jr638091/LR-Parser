@@ -1,79 +1,51 @@
-from grammar import Grammar
-from tools import Firsts, Follow
+# -*- coding: utf-8 -*-
 
-productions = "E   -> T X \n X ->  + E\n X -> @ \n    T     ->     int    Y \nT-> ( E )\nY-> * T\nY-> @"
+# Form implementation generated from reading ui file 'main.ui'
+#
+# Created by: PyQt5 UI code generator 5.10.1
+#
+# WARNING! All changes made in this file will be lost!
 
-epsilon = '@'
-EOF = '$'
+from PyQt5 import QtCore, QtGui, QtWidgets
 
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(800, 600)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
+        self.plainTextEdit.setGeometry(QtCore.QRect(20, 10, 761, 491))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        font.setStrikeOut(False)
+        font.setKerning(False)
+        self.plainTextEdit.setFont(font)
+        self.plainTextEdit.setObjectName("plainTextEdit")
+        self.Parse_Buttom = QtWidgets.QPushButton(self.centralwidget)
+        self.Parse_Buttom.setGeometry(QtCore.QRect(20, 510, 93, 28))
+        self.Parse_Buttom.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.Parse_Buttom.setObjectName("Parse_Buttom")
+        self.help_buttom = QtWidgets.QPushButton(self.centralwidget)
+        self.help_buttom.setGeometry(QtCore.QRect(690, 510, 93, 28))
+        self.help_buttom.setObjectName("help_buttom")
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 26))
+        self.menubar.setObjectName("menubar")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
 
-def first():
-    firsts = Firsts()
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    for i in G.terminals:
-        firsts[i] = [i]
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "LR parser"))
+        self.Parse_Buttom.setText(_translate("MainWindow", "Parse"))
+        self.help_buttom.setText(_translate("MainWindow", "Help"))
 
-    while True:
-        has_been_modified = False
-        for i in G.productions:
-            left_part = i.left
-            right_part = i.right
-            if i.to_epsilon():
-                has_been_modified = firsts.insert_one_first(left_part, epsilon)
-            else:
-                all_epsilon = True
-                for j in right_part:
-                    firsts.insert_various_firsts(left_part, firsts[j])
-                    if not epsilon in firsts[j]:
-                        all_epsilon = False
-                        break
-                if all_epsilon:
-                    firsts.insert_one_first(left_part, epsilon)
-
-        if not has_been_modified:
-            break
-
-    return firsts
-
-
-def first_special(list):
-    result = []
-    for i in list:
-        for j in f[i]:
-            if not j in result and j != epsilon:
-                result.append(j)
-        if not epsilon in f[i]:
-            return result, False
-    return result, True
-
-
-def follow():
-    follows = Follow()
-    follows[G.distinguished] = [EOF]
-    while True:
-        has_been_modified = False
-        for i in G.productions:
-            left_part = i.get_Left()
-            right_part = i.get_Right()
-            for index in range(0, len(right_part)):
-                if right_part[index] in G.terminals:
-                    continue
-                first, all_epsilon = first_special(
-                    right_part[index + 1:len(right_part)])
-                if follows.insert_various_follow(right_part[index], first):
-                    has_been_modified = True
-                if all_epsilon:
-                    if follows.insert_various_follow(right_part[index], follows[left_part]):
-                        has_been_modified = True
-        if not has_been_modified:
-            break
-    return follows
-
-
-G = Grammar(productions, 'E')
-print(G)
-# print(G.terminals, G.not_terminals)
-f = first()
-print(f)
-fo = follow()
-print(fo)

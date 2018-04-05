@@ -30,3 +30,4 @@ class Grammar:
         for i in self.productions:
             result += str(i) + '\n'
         return result
+
