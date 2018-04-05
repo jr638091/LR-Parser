@@ -29,8 +29,14 @@ class SLR_item:
         return False
 
     def __str__(self):
-        p = len(self.production.get_Left()) + 4 +self.point_position
-        return str(self.production)[0:p] +'.'+ str(self.production)[p:-1]
+        r = self.production.get_Left() + " -> "
+        for i in range(0,len(self.production.get_Right())):
+            if i == self.point_position:
+                r+='.'
+            r += self.production.get_Right()[i]
+        if self.point_position == len(self.production.get_Right()):
+            r+='.'
+        return r
 
 class SLR_state:
     def __init__(self, productions,state_number):
@@ -42,16 +48,13 @@ class SLR_state:
         self.state_number = state_number
         
     def expand(self,items,G):
-        items_to_add = []
         for i in items:
             if i.get_next_token() in G.not_terminals:
                 for j in G.productions:
-                    if j.get_Left() == i.production.get_Right()[i.point_position]:
+                    if not j.to_epsilon() and j.get_Left() == i.get_next_token():
                         temp_item = SLR_item(str(j),0)
-                        if not temp_item in items_to_add and not temp_item in items:
-                            items_to_add.append(temp_item)
-        for i in items_to_add:
-            items.append(i)        
+                        if not temp_item in items:
+                            items.append(temp_item)     
 
     def __eq__(self,state):
         if len(self.items) != len(state.items):
@@ -93,9 +96,9 @@ class SLR_automata:
     def __init__(self, grammar):
         self.G = grammar
         self.states = []
-        grammar.productions.insert(0,Production("S_prim -> " + grammar.distinguished))
-        grammar.not_terminals.append("S_prim")
-        self.insert_state(SLR_state(grammar.productions,0))
+        production_prim = Production("S_prim -> " + grammar.distinguished)
+        self.insert_state(SLR_state([production_prim],0))
+        self.states[0].expand(self.states[0].items, self.G)
         self.goto = {}
         self.queue = Queue()
         self.queue.put(self.states[0])
@@ -109,7 +112,7 @@ class SLR_automata:
             return state.state_number
 
     def move_action(self):
-        while self.queue.not_empty:
+        while not self.queue.empty():
             state_to_analize = self.queue.get()
             token = state_to_analize.token_to_analize()
             for i in token:
