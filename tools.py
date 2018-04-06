@@ -1,3 +1,6 @@
+epsilon = '@'
+EOF = "$"
+
 class Node:
     def __init__(self, * args):
         if len(args) < 2:
@@ -169,3 +172,65 @@ class Follow:
         for i in range(0, len(self.keys)):
             result += str(self.keys[i]) + ":" + str(self.follow[i])+"\n"
         return result
+
+def first(G):
+    firsts = Firsts()
+
+    for i in G.terminals:
+        firsts[i] = [i]
+
+    while True:
+        has_been_modified = False
+        for i in G.productions:
+            left_part = i.left
+            right_part = i.right
+            if i.to_epsilon():
+                has_been_modified = firsts.insert_one_first(left_part, epsilon)
+            else:
+                all_epsilon = True
+                for j in right_part:
+                    firsts.insert_various_firsts(left_part, firsts[j])
+                    if not epsilon in firsts[j]:
+                        all_epsilon = False
+                        break
+                if all_epsilon:
+                    firsts.insert_one_first(left_part, epsilon)
+
+        if not has_been_modified:
+            break
+
+    return firsts
+
+
+def first_special(list,f):
+    result = []
+    for i in list:
+        for j in f[i]:
+            if not j in result and j != epsilon:
+                result.append(j)
+        if not epsilon in f[i]:
+            return result, False
+    return result, True
+
+
+def follow(G,f):
+    follows = Follow()
+    follows[G.distinguished] = [EOF]
+    while True:
+        has_been_modified = False
+        for i in G.productions:
+            left_part = i.get_Left()
+            right_part = i.get_Right()
+            for index in range(0, len(right_part)):
+                if right_part[index] in G.terminals:
+                    continue
+                first, all_epsilon = first_special(
+                    right_part[index + 1:len(right_part)],f)
+                if follows.insert_various_follow(right_part[index], first):
+                    has_been_modified = True
+                if all_epsilon:
+                    if follows.insert_various_follow(right_part[index], follows[left_part]):
+                        has_been_modified = True
+        if not has_been_modified:
+            break
+    return follows

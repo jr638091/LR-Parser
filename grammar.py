@@ -29,5 +29,5 @@ class Grammar:
         result = ""
         for i in self.productions:
             result += str(i) + '\n'
-        return result
+        return result[0:-1]
 

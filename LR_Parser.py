@@ -1,6 +1,7 @@
 from productions import Production
 from queue import Queue
 from grammar import Grammar
+from tools import first, follow
 
 G = None
 
@@ -51,7 +52,7 @@ class SLR_state:
         for i in items:
             if i.get_next_token() in G.not_terminals:
                 for j in G.productions:
-                    if not j.to_epsilon() and j.get_Left() == i.get_next_token():
+                    if j.get_Left() == i.get_next_token():
                         temp_item = SLR_item(str(j),0)
                         if not temp_item in items:
                             items.append(temp_item)     
@@ -94,14 +95,19 @@ class SLR_state:
 
 class SLR_automata:
     def __init__(self, grammar):
-        self.G = grammar
         self.states = []
         production_prim = Production("S_prim -> " + grammar.distinguished)
+        show = str(production_prim) + " \n " + str(grammar)
+        self.G = Grammar(show,"S_prim")
         self.insert_state(SLR_state([production_prim],0))
         self.states[0].expand(self.states[0].items, self.G)
         self.goto = {}
         self.queue = Queue()
         self.queue.put(self.states[0])
+        self.firsts = first(self.G)
+        self.follows = follow(self.G,self.firsts)
+        self.move_action()
+        
 
     def insert_state(self, state):
         for i in range(0, len(self.states)):
